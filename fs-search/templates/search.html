@@ -1,0 +1,115 @@
+<!doctype html>
+<head>
+  <title>File Searcher</title>
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+
+  <!-- Custom fonts for this template -->
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+
+  <style>
+    div.top-buffer {
+      margin-top:40px;
+    }
+    button.submit-button {
+      margin-top:40px;
+      background: #ccc url('https://media.tenor.com/images/903f9887941e6799b9da9f3dc6c82891/tenor.gif') no-repeat top left;
+      padding-left: 50px;
+      background-size: contain;
+    }
+  </style>
+
+</head>
+
+<body id="page-top">
+  <script>
+$(function() {
+    $('#submit-button').on('click', function (e) {
+        e.preventDefault(); // disable the default form submit event
+        if ($("#filepath").val() == "") {
+          $("#notification").html('<div class="alert alert-danger"><strong>Error!</strong> Please enter filepath</div>');
+          return;
+        } else {
+          $("#notification").html('');
+        }
+
+        var $form = $('#fs-search-form');
+        var $url = $form.attr("action");
+
+        console.log("url: " + $url)
+
+        $("#notification").html('<img class="img-responsive center-block" src="https://media.tenor.com/images/903f9887941e6799b9da9f3dc6c82891/tenor.gif" />')
+
+        $.ajax({
+            url: $url,
+            type: $form.attr("method"),
+            data: $form.serialize(),
+            success: function (response) {
+                console.log("response: " + JSON.stringify(response))
+
+                $(function() {
+                    if(response['error']) {
+                      $("#notification").html('<div class="alert alert-danger"><strong>Error!</strong> ' + response['error'] + '</div>');
+                    $("#result-table").html('');
+                    } else {
+
+                    $("#notification").html(response);
+                    }
+                });
+            },
+            error: function (response) {
+                $("#notification").html('<div class="alert alert-danger"><strong>Error!</strong> An error occurred, please try refreshing the page.</div>')
+            },
+        });
+
+    });
+});
+  </script>
+
+  <div class="container-fluid">
+    <div class="row" id="header">
+      <div class="col-xs-12 text-center">
+        <h2 class="section-heading">File Searcher</h2>
+        <p>Configured data dir: {{ options.data_dir }}</p>
+      </div>
+    </div>
+
+    <div class="row top-buffer">
+      <div class="col-xs-4"/></div>
+      <div class="col-xs-4">
+        <form id="fs-search-form" method="post" action="/search">
+          <div class="form-group">
+            <label for="filepath">Filename / Filepath</label>
+            <input type="text" name="filepath" id="filepath" class="form-control" placeholder="/path/to/filename.ext" required autofocus>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-lg btn-primary btn-block" type="submit" id="submit-button">Search</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-xs-4">
+      </div>
+    </div>
+
+    <div class="row top-buffer">
+      <div class="col-xs-4">
+      </div>
+      <div class="col-xs-4">
+        <div id="notification"></div>
+      </div>
+      <div class="col-xs-4">
+      </div>
+    </div>
+  </div>
+</body>
